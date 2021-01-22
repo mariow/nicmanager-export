@@ -1,5 +1,7 @@
 # Nicmanager Export
 
+![Screenshot](../media/screenshot-osx.png?raw=true)
+
 ## Was tut das?
 Der Name sagt eigentlich schon alles: Nicmanager Export kann einen Export des Domainbestandes bei [Nicmanager](https://nicmanager.com/) ziehen. Da ich diesen Export regelmäßig brauche und immer wieder vergesse, wie er genau anzulegen ist, entstand dieses kleine Tool.
 ## Bedienung
