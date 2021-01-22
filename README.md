@@ -8,6 +8,10 @@ Es gibt lediglich vier Eingabefelder:
 2. Passwort: Das Passwort für den obigen Benutzernamen
 3. Stichtag: Es werden nur Domains exportiert die zu diesem Stichtag noch im Bestand waren, also entweder nicht oder erst nach diesem Tag gelöscht wurden.
 4. Zieldatei: Name der Ausgabedatei. Die Datei wird in das Verzeichnis geschrieben in dem Nicmanager Export gestartet wurde und **es gibt viel zu wenige Absicherungen gegen versehentlichese überschreiben anderer Dateien**
+Es wird eine CSV-Datei mit den Spalten *Domain*, *Order Date*, *Reg Date* und *Close Date* erstellt. 
+
+## Warum kann das so wenig?
+Der aktuelle Funktionsumfang ist exakt meine Minimalanforderung an das Tool. 
 
 ## Kompilierung
 Eigentlich™ sollte sich der Code sowohl auf Linux, Mac und Windows mit "go run nicmanager-export.go" ausführen und mit "go build nicmanager-export-go" zu einem Binary kompilieren lassen. 
@@ -19,5 +23,6 @@ Es fehlt noch ganz vieles, vor allem aber:
 - ein Dialog um die Zieldatei inkl. Pfad auszuwählen
 - ein optionales Debug-Log
 - Bedienungshinweise im Programmfenster
+- mehr Optionen für die Ausgabedatei, enthaltenen Spalten etc.
 - ...
 
