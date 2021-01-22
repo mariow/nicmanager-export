@@ -18,7 +18,6 @@ import (
 	"fyne.io/fyne/layout"
 	"fyne.io/fyne/theme"
 	"fyne.io/fyne/widget"
-	"github.com/davecgh/go-spew/spew"
 )
 
 func main() {
@@ -95,7 +94,7 @@ func main() {
 				log.Fatal(err)
 			}
 
-			statusMessage.Text = fmt.Sprintf("%d lines written", recordsWritten)
+			statusMessage.Text = fmt.Sprintf("%d Zeilen geschrieben", recordsWritten)
 			statusMessage.Show()
 
 			// clear fields to disable submit button
@@ -124,8 +123,7 @@ func main() {
 
 // tidyUp is called after the app quits
 func tidyUp() {
-	fmt.Println("Exit")
-
+	// turns out there's nothing to do here
 }
 
 func fetchNicmanager(login string, password string, cutoffDate time.Time, outFile *os.File) (int, error) {
@@ -141,7 +139,7 @@ func fetchNicmanager(login string, password string, cutoffDate time.Time, outFil
 	defer csvWriter.Flush()
 
 	for pageNo := 1; morePages; pageNo++ {
-		fmt.Println("requesting pageno " + fmt.Sprintf("%d", pageNo))
+		log.Println("requesting pageno " + fmt.Sprintf("%d", pageNo))
 		req, rErr := http.NewRequest("GET", apiURL+fmt.Sprintf("%d", pageNo), nil)
 		req.Header.Add("Accept", "application/json")
 		req.SetBasicAuth(login, password)
@@ -160,8 +158,8 @@ func fetchNicmanager(login string, password string, cutoffDate time.Time, outFil
 		}
 
 		// DEBUG remove later
-		fmt.Println("Header output:")
-		spew.Dump(res.Header)
+		//fmt.Println("Header output:")
+		//spew.Dump(res.Header)
 
 		//fulldoc := []byte("[{\"order_id\":263985,\"name\":\"1822com.de\",\"renewal_mode\":\"autorenew\",\"reference\":\"\",\"whoisprotection\":false,\"order_status\":\"active\",\"event_status\":\"done\",\"event_alias\":\"KK_IN_OK\",\"order_datetime\":\"2015-08-14T08:33:01Z\",\"start_datetime\":\"2015-08-14T08:33:11Z\",\"registration_datetime\":\"2015-08-14T08:33:11Z\",\"expiration_datetime\":\"2021-01-31T22:59:00Z\",\"delete_datetime\":null,\"handles\":{\"owner\":\"IX-GM5\",\"admin\":\"IX-DZ16\",\"tech\":\"IX-GM5\",\"zone\":\"IX-GM5\"},\"nameserver\":[{\"name\":\"ns1.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"},{\"name\":\"ns2.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"}]},{\"order_id\":305710,\"name\":\"26m.de\",\"renewal_mode\":\"autorenew\",\"reference\":\"\",\"whoisprotection\":false,\"order_status\":\"active\",\"event_status\":\"done\",\"event_alias\":\"KK_IN_OK\",\"order_datetime\":\"2016-09-02T15:23:42Z\",\"start_datetime\":\"2016-09-02T15:23:49Z\",\"registration_datetime\":\"2016-09-02T15:23:49Z\",\"expiration_datetime\":\"2021-01-31T22:59:00Z\",\"delete_datetime\":null,\"handles\":{\"owner\":\"IX-AG7\",\"admin\":\"IX-FB1\",\"tech\":\"IX-AG7\",\"zone\":\"IX-AG7\"},\"nameserver\":[{\"name\":\"ns1.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"},{\"name\":\"ns2.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"}]},{\"order_id\":305202,\"name\":\"2eaux.fr\",\"renewal_mode\":\"autorenew\",\"reference\":\"\",\"whoisprotection\":false,\"order_status\":\"closed\",\"event_status\":\"done\",\"event_alias\":\"CLOSE_OK\",\"order_datetime\":\"2016-08-23T09:25:54Z\",\"start_datetime\":\"2016-08-23T09:25:57Z\",\"registration_datetime\":\"2016-08-23T10:41:54Z\",\"expiration_datetime\":\"2018-08-23T10:41:53Z\",\"delete_datetime\":\"2018-01-31T15:13:39Z\",\"handles\":{\"owner\":\"IX-FB1\",\"admin\":\"IX-FB1\",\"tech\":\"IX-AG7\",\"zone\":\"IX-AG7\"},\"nameserver\":[{\"name\":\"ns1.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"},{\"name\":\"ns2.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"}]},{\"order_id\":462368,\"name\":\"2eaux.fr\",\"renewal_mode\":\"autorenew\",\"reference\":\"\",\"whoisprotection\":false,\"order_status\":\"active\",\"event_status\":\"done\",\"event_alias\":\"REG_OK\",\"order_datetime\":\"2019-05-03T13:19:12Z\",\"start_datetime\":\"2019-05-03T14:02:24Z\",\"registration_datetime\":\"2019-05-03T14:02:24Z\",\"expiration_datetime\":\"2021-05-03T14:02:24Z\",\"delete_datetime\":null,\"handles\":{\"owner\":\"IX-NM11\",\"admin\":\"IX-NM11\",\"tech\":\"IX-NM11\",\"zone\":\"IX-NM11\"},\"nameserver\":[{\"name\":\"ns1.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"},{\"name\":\"ns2.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"}]}]")
 
@@ -195,10 +193,7 @@ func fetchNicmanager(login string, password string, cutoffDate time.Time, outFil
 			dateOrd, _ := time.Parse("2006-01-02T15:04:05Z", rowData.Order_DateTime)
 			dateReg, _ := time.Parse("2006-01-02T15:04:05Z", rowData.Registration_DateTime)
 			dateDel, _ := time.Parse("2006-01-02T15:04:05Z", rowData.Delete_DateTime)
-			fmt.Println(rowData.Delete_DateTime)
-			fmt.Println(dateDel)
-			fmt.Println(dateDel.Unix())
-			fmt.Println(cutoffDate.Unix())
+			log.Printf("Dateldel: %s - DateDel_Unix: %d - Cutoff_Unix: %d", dateDel.String(), dateDel.Unix(), cutoffDate.Unix())
 
 			// filter for records without delete date or with delete date after cutoff
 			dateDelFmt := ""
@@ -220,9 +215,9 @@ func fetchNicmanager(login string, password string, cutoffDate time.Time, outFil
 					dateDelFmt,
 				})
 				recordsWritten++
-				fmt.Println("Written") // DEBUG
+				log.Println("Written") // DEBUG
 			}
-			fmt.Println("---") //DEBUG
+			log.Println("---") //DEBUG
 		}
 
 		// do we have more pages?

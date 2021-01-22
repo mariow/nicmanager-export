@@ -24,5 +24,6 @@ Es fehlt noch ganz vieles, vor allem aber:
 - ein optionales Debug-Log
 - Bedienungshinweise im Programmfenster
 - mehr Optionen für die Ausgabedatei, enthaltenen Spalten etc.
+- Tests
 - ...
 
