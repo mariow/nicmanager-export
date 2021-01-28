@@ -20,7 +20,9 @@ import (
 	"fyne.io/fyne/widget"
 )
 
-type domain struct {
+// Domain struct represents a domain entry from the API
+// TODO: needs to contain all fields, not only the exported ones
+type Domain struct {
 	Name                  string
 	Order_Status          string
 	Order_DateTime        string
@@ -149,7 +151,7 @@ func fetchAndWrite(login string, password string, cutoffDate time.Time, outFile 
 			log.Fatal(err)
 		}
 
-		var domainList []domain
+		var domainList []Domain
 
 		jsonErr := json.Unmarshal(fulldoc, &domainList)
 		if jsonErr != nil {
@@ -199,7 +201,7 @@ func fetchAndWrite(login string, password string, cutoffDate time.Time, outFile 
 	return recordsWritten, nil
 }
 
-func isBelowCutoff(rowData domain, cutoffDate time.Time) bool {
+func isBelowCutoff(rowData Domain, cutoffDate time.Time) bool {
 	// filter for records without delete date or with delete date after cutoff
 	if rowData.Delete_DateTime != "" {
 		parseDelDate, _ := time.Parse("2006-01-02T15:04:05Z", rowData.Delete_DateTime)
