@@ -1,4 +1,4 @@
-package main
+package nicmanagerexport
 
 import (
 	"encoding/csv"
@@ -20,6 +20,14 @@ import (
 	"fyne.io/fyne/widget"
 )
 
+type domain struct {
+	Name                  string
+	Order_Status          string
+	Order_DateTime        string
+	Registration_DateTime string
+	Delete_DateTime       string
+}
+
 func main() {
 	a := app.NewWithID("witte.io.nicmanager-export")
 	w := a.NewWindow("Nicmanager Exporter") // main app name shown in process list
@@ -38,6 +46,7 @@ func main() {
 	   Progress
 	*/
 
+	// TODO: Validator in separate Funktionen auslagern
 	uiCredUsername := widget.NewEntry()
 	uiCredUsername.SetPlaceHolder("account.user")
 	uiCredUsername.Validator = validation.NewRegexp("^[a-z0-9_.-]+$", "Darf nicht leer sein")
@@ -83,7 +92,8 @@ func main() {
 				log.Fatal(dtErr)
 			}
 
-			recordsWritten, err := fetchNicmanager(
+			// fetch data from API and write to output file
+			recordsWritten, err := fetchAndWrite(
 				uiCredUsername.Text,
 				uiCredPassword.Text,
 				cutoffDate,
@@ -118,18 +128,11 @@ func main() {
 	w.Resize(fyne.NewSize(250, 500))
 
 	w.ShowAndRun()
-	tidyUp()
 }
 
-// tidyUp is called after the app quits
-func tidyUp() {
-	// turns out there's nothing to do here
-}
-
-func fetchNicmanager(login string, password string, cutoffDate time.Time, outFile *os.File) (int, error) {
+func fetchAndWrite(login string, password string, cutoffDate time.Time, outFile *os.File) (int, error) {
 
 	// init vars
-	var apiURL string = "https://api.nicmanager.com/v1/domains?limit=100&page="
 	var morePages bool = true
 	var recordsWritten int = 0
 
@@ -140,40 +143,13 @@ func fetchNicmanager(login string, password string, cutoffDate time.Time, outFil
 
 	for pageNo := 1; morePages; pageNo++ {
 		log.Println("requesting pageno " + fmt.Sprintf("%d", pageNo))
-		req, rErr := http.NewRequest("GET", apiURL+fmt.Sprintf("%d", pageNo), nil)
-		req.Header.Add("Accept", "application/json")
-		req.SetBasicAuth(login, password)
-		if rErr != nil {
-			log.Fatal(rErr)
-		}
 
-		res, err := client.Do(req)
+		fulldoc, err := fetchNicmanagerAPI(client, login, password, pageNo)
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer res.Body.Close()
 
-		if res.StatusCode != 200 {
-			log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
-		}
-
-		// DEBUG remove later
-		//fmt.Println("Header output:")
-		//spew.Dump(res.Header)
-
-		//fulldoc := []byte("[{\"order_id\":263985,\"name\":\"1822com.de\",\"renewal_mode\":\"autorenew\",\"reference\":\"\",\"whoisprotection\":false,\"order_status\":\"active\",\"event_status\":\"done\",\"event_alias\":\"KK_IN_OK\",\"order_datetime\":\"2015-08-14T08:33:01Z\",\"start_datetime\":\"2015-08-14T08:33:11Z\",\"registration_datetime\":\"2015-08-14T08:33:11Z\",\"expiration_datetime\":\"2021-01-31T22:59:00Z\",\"delete_datetime\":null,\"handles\":{\"owner\":\"IX-GM5\",\"admin\":\"IX-DZ16\",\"tech\":\"IX-GM5\",\"zone\":\"IX-GM5\"},\"nameserver\":[{\"name\":\"ns1.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"},{\"name\":\"ns2.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"}]},{\"order_id\":305710,\"name\":\"26m.de\",\"renewal_mode\":\"autorenew\",\"reference\":\"\",\"whoisprotection\":false,\"order_status\":\"active\",\"event_status\":\"done\",\"event_alias\":\"KK_IN_OK\",\"order_datetime\":\"2016-09-02T15:23:42Z\",\"start_datetime\":\"2016-09-02T15:23:49Z\",\"registration_datetime\":\"2016-09-02T15:23:49Z\",\"expiration_datetime\":\"2021-01-31T22:59:00Z\",\"delete_datetime\":null,\"handles\":{\"owner\":\"IX-AG7\",\"admin\":\"IX-FB1\",\"tech\":\"IX-AG7\",\"zone\":\"IX-AG7\"},\"nameserver\":[{\"name\":\"ns1.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"},{\"name\":\"ns2.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"}]},{\"order_id\":305202,\"name\":\"2eaux.fr\",\"renewal_mode\":\"autorenew\",\"reference\":\"\",\"whoisprotection\":false,\"order_status\":\"closed\",\"event_status\":\"done\",\"event_alias\":\"CLOSE_OK\",\"order_datetime\":\"2016-08-23T09:25:54Z\",\"start_datetime\":\"2016-08-23T09:25:57Z\",\"registration_datetime\":\"2016-08-23T10:41:54Z\",\"expiration_datetime\":\"2018-08-23T10:41:53Z\",\"delete_datetime\":\"2018-01-31T15:13:39Z\",\"handles\":{\"owner\":\"IX-FB1\",\"admin\":\"IX-FB1\",\"tech\":\"IX-AG7\",\"zone\":\"IX-AG7\"},\"nameserver\":[{\"name\":\"ns1.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"},{\"name\":\"ns2.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"}]},{\"order_id\":462368,\"name\":\"2eaux.fr\",\"renewal_mode\":\"autorenew\",\"reference\":\"\",\"whoisprotection\":false,\"order_status\":\"active\",\"event_status\":\"done\",\"event_alias\":\"REG_OK\",\"order_datetime\":\"2019-05-03T13:19:12Z\",\"start_datetime\":\"2019-05-03T14:02:24Z\",\"registration_datetime\":\"2019-05-03T14:02:24Z\",\"expiration_datetime\":\"2021-05-03T14:02:24Z\",\"delete_datetime\":null,\"handles\":{\"owner\":\"IX-NM11\",\"admin\":\"IX-NM11\",\"tech\":\"IX-NM11\",\"zone\":\"IX-NM11\"},\"nameserver\":[{\"name\":\"ns1.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"},{\"name\":\"ns2.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"}]}]")
-
-		// convert response into string
-		fulldoc, err := ioutil.ReadAll(res.Body)
-
-		type Domain struct {
-			Name                  string
-			Order_Status          string
-			Order_DateTime        string
-			Registration_DateTime string
-			Delete_DateTime       string
-		}
-		var domainList []Domain
+		var domainList []domain
 
 		jsonErr := json.Unmarshal(fulldoc, &domainList)
 		if jsonErr != nil {
@@ -190,24 +166,20 @@ func fetchNicmanager(login string, password string, cutoffDate time.Time, outFil
 				})
 			}
 
+			// parse dates
 			dateOrd, _ := time.Parse("2006-01-02T15:04:05Z", rowData.Order_DateTime)
 			dateReg, _ := time.Parse("2006-01-02T15:04:05Z", rowData.Registration_DateTime)
-			dateDel, _ := time.Parse("2006-01-02T15:04:05Z", rowData.Delete_DateTime)
-			log.Printf("Dateldel: %s - DateDel_Unix: %d - Cutoff_Unix: %d", dateDel.String(), dateDel.Unix(), cutoffDate.Unix())
 
-			// filter for records without delete date or with delete date after cutoff
+			//log.Printf("Dateldel: %s - DateDel_Unix: %d - Cutoff_Unix: %d", dateDel.String(), dateDel.Unix(), cutoffDate.Unix())
+
+			// format Delete date for output
 			dateDelFmt := ""
-			boolWriteRecord := false
 			if rowData.Delete_DateTime != "" {
-				dateDelFmt = dateDel.Format("2006-01-02")
-				if dateDel.Unix() > cutoffDate.Unix() {
-					boolWriteRecord = true
-				}
-			} else {
-				boolWriteRecord = true
+				parsedDate, _ := time.Parse("2006-01-02T15:04:05Z", rowData.Delete_DateTime)
+				dateDelFmt = parsedDate.Format("2006-01-02")
 			}
 
-			if boolWriteRecord {
+			if isBelowCutoff(rowData, cutoffDate) {
 				csvWriter.Write([]string{
 					rowData.Name,
 					dateOrd.Format("2006-01-02"),
@@ -225,4 +197,47 @@ func fetchNicmanager(login string, password string, cutoffDate time.Time, outFil
 	}
 
 	return recordsWritten, nil
+}
+
+func isBelowCutoff(rowData domain, cutoffDate time.Time) bool {
+	// filter for records without delete date or with delete date after cutoff
+	if rowData.Delete_DateTime != "" {
+		parseDelDate, _ := time.Parse("2006-01-02T15:04:05Z", rowData.Delete_DateTime)
+		if parseDelDate.Unix() > cutoffDate.Unix() {
+			return true
+		}
+	} else {
+		return true
+	}
+	return false
+}
+
+func fetchNicmanagerAPI(client http.Client, login string, password string, pageNo int) ([]byte, error) {
+	var apiURL string = "https://api.nicmanager.com/v1/domains?limit=100&page="
+	req, rErr := http.NewRequest("GET", apiURL+fmt.Sprintf("%d", pageNo), nil)
+	req.Header.Add("Accept", "application/json")
+	req.SetBasicAuth(login, password)
+	if rErr != nil {
+		log.Fatal(rErr)
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != 200 {
+		log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
+	}
+
+	// DEBUG remove later
+	//fmt.Println("Header output:")
+	//spew.Dump(res.Header)
+
+	//fulldoc := []byte("[{\"order_id\":263985,\"name\":\"1822com.de\",\"renewal_mode\":\"autorenew\",\"reference\":\"\",\"whoisprotection\":false,\"order_status\":\"active\",\"event_status\":\"done\",\"event_alias\":\"KK_IN_OK\",\"order_datetime\":\"2015-08-14T08:33:01Z\",\"start_datetime\":\"2015-08-14T08:33:11Z\",\"registration_datetime\":\"2015-08-14T08:33:11Z\",\"expiration_datetime\":\"2021-01-31T22:59:00Z\",\"delete_datetime\":null,\"handles\":{\"owner\":\"IX-GM5\",\"admin\":\"IX-DZ16\",\"tech\":\"IX-GM5\",\"zone\":\"IX-GM5\"},\"nameserver\":[{\"name\":\"ns1.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"},{\"name\":\"ns2.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"}]},{\"order_id\":305710,\"name\":\"26m.de\",\"renewal_mode\":\"autorenew\",\"reference\":\"\",\"whoisprotection\":false,\"order_status\":\"active\",\"event_status\":\"done\",\"event_alias\":\"KK_IN_OK\",\"order_datetime\":\"2016-09-02T15:23:42Z\",\"start_datetime\":\"2016-09-02T15:23:49Z\",\"registration_datetime\":\"2016-09-02T15:23:49Z\",\"expiration_datetime\":\"2021-01-31T22:59:00Z\",\"delete_datetime\":null,\"handles\":{\"owner\":\"IX-AG7\",\"admin\":\"IX-FB1\",\"tech\":\"IX-AG7\",\"zone\":\"IX-AG7\"},\"nameserver\":[{\"name\":\"ns1.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"},{\"name\":\"ns2.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"}]},{\"order_id\":305202,\"name\":\"2eaux.fr\",\"renewal_mode\":\"autorenew\",\"reference\":\"\",\"whoisprotection\":false,\"order_status\":\"closed\",\"event_status\":\"done\",\"event_alias\":\"CLOSE_OK\",\"order_datetime\":\"2016-08-23T09:25:54Z\",\"start_datetime\":\"2016-08-23T09:25:57Z\",\"registration_datetime\":\"2016-08-23T10:41:54Z\",\"expiration_datetime\":\"2018-08-23T10:41:53Z\",\"delete_datetime\":\"2018-01-31T15:13:39Z\",\"handles\":{\"owner\":\"IX-FB1\",\"admin\":\"IX-FB1\",\"tech\":\"IX-AG7\",\"zone\":\"IX-AG7\"},\"nameserver\":[{\"name\":\"ns1.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"},{\"name\":\"ns2.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"}]},{\"order_id\":462368,\"name\":\"2eaux.fr\",\"renewal_mode\":\"autorenew\",\"reference\":\"\",\"whoisprotection\":false,\"order_status\":\"active\",\"event_status\":\"done\",\"event_alias\":\"REG_OK\",\"order_datetime\":\"2019-05-03T13:19:12Z\",\"start_datetime\":\"2019-05-03T14:02:24Z\",\"registration_datetime\":\"2019-05-03T14:02:24Z\",\"expiration_datetime\":\"2021-05-03T14:02:24Z\",\"delete_datetime\":null,\"handles\":{\"owner\":\"IX-NM11\",\"admin\":\"IX-NM11\",\"tech\":\"IX-NM11\",\"zone\":\"IX-NM11\"},\"nameserver\":[{\"name\":\"ns1.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"},{\"name\":\"ns2.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"}]}]")
+
+	// convert response into string
+	return ioutil.ReadAll(res.Body)
+
 }
