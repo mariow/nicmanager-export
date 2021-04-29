@@ -1,4 +1,5 @@
 [![Go](https://github.com/mariow/nicmanager-export/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/mariow/nicmanager-export/actions/workflows/go.yml)
+[![Coverage Status](https://coveralls.io/repos/github/mariow/nicmanager-export/badge.svg?branch=master)](https://coveralls.io/github/mariow/nicmanager-export?branch=master)
 
 # Nicmanager Export
 
