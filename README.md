@@ -1,3 +1,5 @@
+[![Go](https://github.com/mariow/nicmanager-export/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/mariow/nicmanager-export/actions/workflows/go.yml)
+
 # Nicmanager Export
 
 ![Screenshot](../media/screenshot-osx.png?raw=true)

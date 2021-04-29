@@ -1,0 +1,31 @@
+on:
+  release:
+    types: [created]
+    
+jobs:
+  release:
+    runs-on: ${{matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        goos: [ linux, windows, macos ]
+        goarch: [ amd64 ]
+
+    steps:
+    - uses: actions/checkout@v2
+        
+    - name: Get dependencies
+      run: sudo apt-get update && sudo apt-get install gcc libgl1-mesa-dev libegl1-mesa-dev libgles2-mesa-dev libx11-dev xorg-dev
+      if: ${{ runner.os == 'Linux' }}
+      
+    - name: Tests
+      run: go test -tags ci ./...
+    
+    - name: Go Release Binaries
+      uses: wangyoucao577/go-release-action@v1.17
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        goos: {{ $matrix.goos }}
+        goarch: ${{ matrix.goarch }}
+        binary_name: "nicmanager-export"
+        extra_files: LICENSE
