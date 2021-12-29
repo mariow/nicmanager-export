@@ -11,23 +11,24 @@ import (
 	"os"
 	"time"
 
-	"fyne.io/fyne"
-	"fyne.io/fyne/app"
-	"fyne.io/fyne/canvas"
-	"fyne.io/fyne/data/validation"
-	"fyne.io/fyne/layout"
-	"fyne.io/fyne/theme"
-	"fyne.io/fyne/widget"
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/validation"
+	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
+	"fyne.io/fyne/v2/widget"
 )
 
 // Domain struct represents a domain entry from the API
 // TODO: needs to contain all fields, not only the exported ones
 type Domain struct {
-	Name                  string
-	Order_Status          string
-	Order_DateTime        string
-	Registration_DateTime string
-	Delete_DateTime       string
+	Name                 string
+	OrderStatus          string
+	OrderDateTime        string
+	RegistrationDateTime string
+	DeleteDateTime       string
 }
 
 func main() {
@@ -117,7 +118,7 @@ func main() {
 		},
 	}
 
-	w.SetContent(widget.NewVBox(
+	w.SetContent(container.NewVBox(
 		uiTitle,
 		canvas.NewLine(theme.TextColor()),
 		uiForm,
@@ -151,8 +152,8 @@ func fetchAndWrite(login string, password string, cutoffDate time.Time, outFile 
 			log.Fatal(err)
 		}
 
+		// TODO: this needs to go into a separate function
 		var domainList []Domain
-
 		jsonErr := json.Unmarshal(fulldoc, &domainList)
 		if jsonErr != nil {
 			log.Fatal(jsonErr)
@@ -169,19 +170,19 @@ func fetchAndWrite(login string, password string, cutoffDate time.Time, outFile 
 			}
 
 			// parse dates
-			dateOrd, _ := time.Parse("2006-01-02T15:04:05Z", rowData.Order_DateTime)
-			dateReg, _ := time.Parse("2006-01-02T15:04:05Z", rowData.Registration_DateTime)
+			dateOrd, _ := parseAPIdate(rowData.OrderDateTime)
+			dateReg, _ := parseAPIdate(rowData.RegistrationDateTime)
 
 			//log.Printf("Dateldel: %s - DateDel_Unix: %d - Cutoff_Unix: %d", dateDel.String(), dateDel.Unix(), cutoffDate.Unix())
 
 			// format Delete date for output
 			dateDelFmt := ""
-			if rowData.Delete_DateTime != "" {
-				parsedDate, _ := time.Parse("2006-01-02T15:04:05Z", rowData.Delete_DateTime)
+			if rowData.DeleteDateTime != "" {
+				parsedDate, _ := parseAPIdate(rowData.DeleteDateTime)
 				dateDelFmt = parsedDate.Format("2006-01-02")
 			}
 
-			if isBelowCutoff(rowData, cutoffDate) {
+			if rowData.IsBelowCutoff(cutoffDate) {
 				csvWriter.Write([]string{
 					rowData.Name,
 					dateOrd.Format("2006-01-02"),
@@ -201,10 +202,14 @@ func fetchAndWrite(login string, password string, cutoffDate time.Time, outFile 
 	return recordsWritten, nil
 }
 
-func isBelowCutoff(rowData Domain, cutoffDate time.Time) bool {
-	// filter for records without delete date or with delete date after cutoff
-	if rowData.Delete_DateTime != "" {
-		parseDelDate, _ := time.Parse("2006-01-02T15:04:05Z", rowData.Delete_DateTime)
+func parseAPIdate(dateString string) (time.Time, error) {
+	return time.Parse("2006-01-02T15:04:05Z", dateString)
+}
+
+// IsBelowCutoff filters for records without delete date or with delete date after cutoff
+func (d *Domain) IsBelowCutoff(cutoffDate time.Time) bool {
+	if d.DeleteDateTime != "" {
+		parseDelDate, _ := parseAPIdate(d.DeleteDateTime)
 		if parseDelDate.Unix() > cutoffDate.Unix() {
 			return true
 		}
