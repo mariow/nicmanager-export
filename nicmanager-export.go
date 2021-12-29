@@ -1,4 +1,4 @@
-package nicmanagerexport
+package main
 
 import (
 	"encoding/csv"
@@ -128,7 +128,7 @@ func main() {
 		layout.NewSpacer(),
 		canvas.NewText("© 2021", color.White),
 	))
-	w.Resize(fyne.NewSize(250, 500))
+	w.Resize(fyne.NewSize(300, 500))
 
 	w.ShowAndRun()
 }
