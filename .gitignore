@@ -1,8 +1,3 @@
-# App specific excludes
-*.csv
-
-
-# ----
 # Created by https://www.toptal.com/developers/gitignore/api/go,visualstudiocode,linux
 # Edit at https://www.toptal.com/developers/gitignore?templates=go,visualstudiocode,linux
 
@@ -54,3 +49,11 @@
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/go,visualstudiocode,linux
+
+
+## Visual Studio Code ##
+*.workspace
+
+## App specific excludes ##
+*.csv
+
