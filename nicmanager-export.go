@@ -22,13 +22,12 @@ import (
 )
 
 // Domain struct represents a domain entry from the API
-// TODO: needs to contain all fields, not only the exported ones
 type Domain struct {
-	Name                 string
-	OrderStatus          string
-	OrderDateTime        string
-	RegistrationDateTime string
-	DeleteDateTime       string
+	Name                 string `json:"name"`
+	OrderStatus          string `json:"order_status"`
+	OrderDateTime        string `json:"order_datetime"`
+	RegistrationDateTime string `json:"registration_datetime"`
+	DeleteDateTime       string `json:"delete_datetime"`
 }
 
 func main() {
@@ -126,7 +125,7 @@ func main() {
 		obscureProgress,
 		statusMessage,
 		layout.NewSpacer(),
-		canvas.NewText("© 2021", color.White),
+		canvas.NewText("© 2021-2023", color.White),
 	))
 	w.Resize(fyne.NewSize(300, 500))
 
@@ -138,6 +137,7 @@ func fetchAndWrite(login string, password string, cutoffDate time.Time, outFile 
 	// init vars
 	var morePages bool = true
 	var recordsWritten int = 0
+	var headerWritten bool = false
 
 	// contact API
 	client := http.Client{}
@@ -159,21 +159,22 @@ func fetchAndWrite(login string, password string, cutoffDate time.Time, outFile 
 			log.Fatal(jsonErr)
 		}
 
+		//TODO: Irgendwo hier gehen Daten verloren. Im JSON sind noch Daten drin, hier nicht mehr
+
 		for _, rowData := range domainList {
-			if recordsWritten == 0 {
+			if !headerWritten {
 				csvWriter.Write([]string{
 					"Domain",
 					"Order Date",
 					"Reg Date",
 					"Close Date",
 				})
+				headerWritten = true
 			}
 
 			// parse dates
 			dateOrd, _ := parseAPIdate(rowData.OrderDateTime)
 			dateReg, _ := parseAPIdate(rowData.RegistrationDateTime)
-
-			//log.Printf("Dateldel: %s - DateDel_Unix: %d - Cutoff_Unix: %d", dateDel.String(), dateDel.Unix(), cutoffDate.Unix())
 
 			// format Delete date for output
 			dateDelFmt := ""
@@ -181,6 +182,8 @@ func fetchAndWrite(login string, password string, cutoffDate time.Time, outFile 
 				parsedDate, _ := parseAPIdate(rowData.DeleteDateTime)
 				dateDelFmt = parsedDate.Format("2006-01-02")
 			}
+
+			//log.Printf("Dateldel: %s (%s) - Cutoff_Unix: %d", rowData.DeleteDateTime, dateDelFmt, cutoffDate.Unix())
 
 			if rowData.IsBelowCutoff(cutoffDate) {
 				csvWriter.Write([]string{
@@ -203,6 +206,7 @@ func fetchAndWrite(login string, password string, cutoffDate time.Time, outFile 
 }
 
 func parseAPIdate(dateString string) (time.Time, error) {
+	//DEBUG log.Println("parsing date: " + dateString)
 	return time.Parse("2006-01-02T15:04:05Z", dateString)
 }
 
@@ -241,8 +245,6 @@ func fetchNicmanagerAPI(client http.Client, login string, password string, pageN
 	// DEBUG remove later
 	//fmt.Println("Header output:")
 	//spew.Dump(res.Header)
-
-	//fulldoc := []byte("[{\"order_id\":263985,\"name\":\"1822com.de\",\"renewal_mode\":\"autorenew\",\"reference\":\"\",\"whoisprotection\":false,\"order_status\":\"active\",\"event_status\":\"done\",\"event_alias\":\"KK_IN_OK\",\"order_datetime\":\"2015-08-14T08:33:01Z\",\"start_datetime\":\"2015-08-14T08:33:11Z\",\"registration_datetime\":\"2015-08-14T08:33:11Z\",\"expiration_datetime\":\"2021-01-31T22:59:00Z\",\"delete_datetime\":null,\"handles\":{\"owner\":\"IX-GM5\",\"admin\":\"IX-DZ16\",\"tech\":\"IX-GM5\",\"zone\":\"IX-GM5\"},\"nameserver\":[{\"name\":\"ns1.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"},{\"name\":\"ns2.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"}]},{\"order_id\":305710,\"name\":\"26m.de\",\"renewal_mode\":\"autorenew\",\"reference\":\"\",\"whoisprotection\":false,\"order_status\":\"active\",\"event_status\":\"done\",\"event_alias\":\"KK_IN_OK\",\"order_datetime\":\"2016-09-02T15:23:42Z\",\"start_datetime\":\"2016-09-02T15:23:49Z\",\"registration_datetime\":\"2016-09-02T15:23:49Z\",\"expiration_datetime\":\"2021-01-31T22:59:00Z\",\"delete_datetime\":null,\"handles\":{\"owner\":\"IX-AG7\",\"admin\":\"IX-FB1\",\"tech\":\"IX-AG7\",\"zone\":\"IX-AG7\"},\"nameserver\":[{\"name\":\"ns1.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"},{\"name\":\"ns2.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"}]},{\"order_id\":305202,\"name\":\"2eaux.fr\",\"renewal_mode\":\"autorenew\",\"reference\":\"\",\"whoisprotection\":false,\"order_status\":\"closed\",\"event_status\":\"done\",\"event_alias\":\"CLOSE_OK\",\"order_datetime\":\"2016-08-23T09:25:54Z\",\"start_datetime\":\"2016-08-23T09:25:57Z\",\"registration_datetime\":\"2016-08-23T10:41:54Z\",\"expiration_datetime\":\"2018-08-23T10:41:53Z\",\"delete_datetime\":\"2018-01-31T15:13:39Z\",\"handles\":{\"owner\":\"IX-FB1\",\"admin\":\"IX-FB1\",\"tech\":\"IX-AG7\",\"zone\":\"IX-AG7\"},\"nameserver\":[{\"name\":\"ns1.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"},{\"name\":\"ns2.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"}]},{\"order_id\":462368,\"name\":\"2eaux.fr\",\"renewal_mode\":\"autorenew\",\"reference\":\"\",\"whoisprotection\":false,\"order_status\":\"active\",\"event_status\":\"done\",\"event_alias\":\"REG_OK\",\"order_datetime\":\"2019-05-03T13:19:12Z\",\"start_datetime\":\"2019-05-03T14:02:24Z\",\"registration_datetime\":\"2019-05-03T14:02:24Z\",\"expiration_datetime\":\"2021-05-03T14:02:24Z\",\"delete_datetime\":null,\"handles\":{\"owner\":\"IX-NM11\",\"admin\":\"IX-NM11\",\"tech\":\"IX-NM11\",\"zone\":\"IX-NM11\"},\"nameserver\":[{\"name\":\"ns1.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"},{\"name\":\"ns2.parkingcrew.net\",\"addr\":null,\"type\":\"NS\"}]}]")
 
 	// convert response into string
 	return ioutil.ReadAll(res.Body)
