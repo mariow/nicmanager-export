@@ -1,8 +1,8 @@
-module witte.io/nicmanager-export
+module github.com/correct-repo-path/nicmanager-export
 
 go 1.17
 
-require fyne.io/fyne/v2 v2.3.3
+require fyne.io/fyne/v2 v2.3.5
 
 require (
 	fyne.io/systray v1.10.1-0.20230312215936-7f71b037e260 // indirect
