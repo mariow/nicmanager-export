@@ -1,4 +1,4 @@
-module github.com/correct-repo-path/nicmanager-export
+module github.com/mariow/nicmanager-export
 
 go 1.17
 
