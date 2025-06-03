@@ -21,14 +21,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-// Domain struct represents a domain entry from the API
-type Domain struct {
-	Name                 string `json:"name"`
-	OrderStatus          string `json:"order_status"`
-	OrderDateTime        string `json:"order_datetime"`
-	RegistrationDateTime string `json:"registration_datetime"`
-	DeleteDateTime       string `json:"delete_datetime"`
-}
+
 
 func main() {
 	a := app.NewWithID("witte.io.nicmanager-export")
@@ -205,23 +198,7 @@ func fetchAndWrite(login string, password string, cutoffDate time.Time, outFile 
 	return recordsWritten, nil
 }
 
-func parseAPIdate(dateString string) (time.Time, error) {
-	//DEBUG log.Println("parsing date: " + dateString)
-	return time.Parse("2006-01-02T15:04:05Z", dateString)
-}
 
-// IsBelowCutoff filters for records without delete date or with delete date after cutoff
-func (d *Domain) IsBelowCutoff(cutoffDate time.Time) bool {
-	if d.DeleteDateTime != "" {
-		parseDelDate, _ := parseAPIdate(d.DeleteDateTime)
-		if parseDelDate.Unix() > cutoffDate.Unix() {
-			return true
-		}
-	} else {
-		return true
-	}
-	return false
-}
 
 func fetchNicmanagerAPI(client http.Client, login string, password string, pageNo int) ([]byte, error) {
 	var apiURL string = "https://api.nicmanager.com/v1/domains?limit=100&page="

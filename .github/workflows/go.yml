@@ -8,20 +8,19 @@ on:
 
 jobs:
   platform_tests:
-    runs-on: ${{matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        go-version: [1.17.x]
+        go-version: ['1.19', '1.20', '1.21']
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: WillAbides/setup-go-faster@v1.5.0
-      id: setup-go-faster
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v5
       with:
         go-version: ${{ matrix.go-version }}
-    - uses: actions/cache@v2
+    - uses: actions/cache@v4
       with:
         path: |
           ~/go/pkg/mod
@@ -41,16 +40,7 @@ jobs:
     
     - name: Update coverage
       run: |
-        GO111MODULE=off go get github.com/mattn/goveralls
-        set -e
         go test -tags ci -covermode=atomic -coverprofile=coverage.out ./...
-        if [ $coverage -lt 69 ]; then echo "Test coverage lowered"; exit 1; fi
-      if: ${{ runner.os == 'Linux' }}
+      if: ${{ runner.os == 'Linux' && matrix.go-version == '1.21' }}
 
-    - name: Update PR Coverage
-      uses: shogo82148/actions-goveralls@v1
-      env:
-        GOROOT: ${{steps.setup-go-faster.outputs.GOROOT}}
-      with:
-        path-to-profile: coverage.out
-      if: ${{ runner.os == 'Linux' && github.event_name == 'push' }}
+
