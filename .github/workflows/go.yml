@@ -40,7 +40,6 @@ jobs:
     
     - name: Update coverage
       run: |
-        go install github.com/mattn/goveralls@latest
         go test -tags ci -covermode=atomic -coverprofile=coverage.out ./...
       if: ${{ runner.os == 'Linux' }}
 
