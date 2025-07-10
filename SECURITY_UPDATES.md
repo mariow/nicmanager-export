@@ -10,6 +10,8 @@ The following security-critical dependencies have been updated to address known 
 - **golang.org/x/net**: Updated to v0.36.0 (meets requirement ≥0.36.0)
 - **golang.org/x/image**: Updated to v0.24.0 (exceeds requirement ≥0.18.0)
 - **golang.org/x/crypto**: Updated to v0.35.0 (meets requirement ≥0.24.0, transitive dependency)
+- **golang.org/x/sys**: Updated to v0.34.0 (latest available, addresses Snyk vulnerabilities)
+- **golang.org/x/text**: Updated to v0.27.0 (latest available, proactive security update)
 
 ### Framework Updates
 - **fyne.io/fyne/v2**: Updated from v2.3.5 to v2.6.1
