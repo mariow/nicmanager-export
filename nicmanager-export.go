@@ -21,8 +21,6 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-
-
 func main() {
 	a := app.NewWithID("witte.io.nicmanager-export")
 	w := a.NewWindow("Nicmanager Exporter") // main app name shown in process list
@@ -197,8 +195,6 @@ func fetchAndWrite(login string, password string, cutoffDate time.Time, outFile 
 
 	return recordsWritten, nil
 }
-
-
 
 func fetchNicmanagerAPI(client http.Client, login string, password string, pageNo int) ([]byte, error) {
 	var apiURL string = "https://api.nicmanager.com/v1/domains?limit=100&page="
