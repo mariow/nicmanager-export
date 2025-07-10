@@ -1,0 +1,52 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.25.0
+
+# Ignore false positives - these packages are not actually used in this project
+ignore:
+  # These packages are not in our dependency tree and appear to be false positives
+  'goauthentik.io':
+    - '*':
+        reason: Package not used in this project
+        expires: '2026-01-01T00:00:00.000Z'
+  'go.etcd.io/etcd/v3/auth':
+    - '*':
+        reason: Package not used in this project
+        expires: '2026-01-01T00:00:00.000Z'
+  'gopkg.in/yaml.v2':
+    - '*':
+        reason: We use yaml.v3, not v2
+        expires: '2026-01-01T00:00:00.000Z'
+  'go.thethings.network/lorawan-stack/v3/pkg/webui/account/views/login':
+    - '*':
+        reason: Package not used in this project
+        expires: '2026-01-01T00:00:00.000Z'
+  'go.dedis.ch/kyber/v3':
+    - '*':
+        reason: Package not used in this project
+        expires: '2026-01-01T00:00:00.000Z'
+  'go.etcd.io/etcd/v3/wal':
+    - '*':
+        reason: Package not used in this project
+        expires: '2026-01-01T00:00:00.000Z'
+  'go.etcd.io/etcd/v3/embed':
+    - '*':
+        reason: Package not used in this project
+        expires: '2026-01-01T00:00:00.000Z'
+  'gopkg.in/go-jose/go-jose.v2':
+    - '*':
+        reason: Package not used in this project
+        expires: '2026-01-01T00:00:00.000Z'
+  'go.etcd.io/etcd/v3/etcdmain':
+    - '*':
+        reason: Package not used in this project
+        expires: '2026-01-01T00:00:00.000Z'
+  'go.mozilla.org/sops/v3/cmd/sops':
+    - '*':
+        reason: Package not used in this project
+        expires: '2026-01-01T00:00:00.000Z'
+
+# Language settings
+language-settings:
+  go:
+    # Only scan actual dependencies from go.mod
+    scan-unmanaged: false

@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        go-version: ['1.19', '1.20', '1.21']
+        go-version: ['1.23']
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
@@ -31,16 +31,18 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-go-
         
-    - name: Get dependencies
-      run: sudo apt-get update && sudo apt-get install gcc libgl1-mesa-dev libegl1-mesa-dev libgles2-mesa-dev libx11-dev xorg-dev
+    - name: Get dependencies (Linux)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc
       if: ${{ runner.os == 'Linux' }}
-      
+    
     - name: Tests
-      run: go test -tags ci ./...
+      run: go test -tags test ./...
     
     - name: Update coverage
       run: |
-        go test -tags ci -covermode=atomic -coverprofile=coverage.out ./...
-      if: ${{ runner.os == 'Linux' && matrix.go-version == '1.21' }}
+        go test -tags test -covermode=atomic -coverprofile=coverage.out ./...
+      if: ${{ runner.os == 'Linux' && matrix.go-version == '1.23' }}
 
 

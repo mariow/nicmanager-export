@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -187,7 +187,7 @@ func BenchmarkDomain_IsBelowCutoff(b *testing.B) {
 		Name:           "benchmark.com",
 		DeleteDateTime: "2023-07-15T10:30:00Z",
 	}
-	
+
 	for i := 0; i < b.N; i++ {
 		_ = domain.IsBelowCutoff(cutoffDate)
 	}
@@ -249,13 +249,13 @@ func TestFetchNicmanagerAPI(t *testing.T) {
 				assert.Equal(t, "GET", r.Method)
 				assert.Contains(t, r.URL.Path, "/v1/domains")
 				assert.Equal(t, "application/json", r.Header.Get("Accept"))
-				
+
 				// Check basic auth
 				username, password, ok := r.BasicAuth()
 				assert.True(t, ok, "Basic auth should be present")
 				assert.Equal(t, tt.login, username)
 				assert.Equal(t, tt.password, password)
-				
+
 				// Check query parameters
 				assert.Equal(t, "100", r.URL.Query().Get("limit"))
 				assert.Equal(t, "1", r.URL.Query().Get("page"))
@@ -267,7 +267,7 @@ func TestFetchNicmanagerAPI(t *testing.T) {
 
 			// Create a custom client that uses our test server
 			client := http.Client{}
-			
+
 			// We need to modify the fetchNicmanagerAPI function to accept a custom URL for testing
 			// For now, let's test the logic by creating a custom version
 			result, err := fetchNicmanagerAPIWithURL(client, tt.login, tt.password, tt.pageNo, server.URL+"/v1/domains")
@@ -301,5 +301,5 @@ func fetchNicmanagerAPIWithURL(client http.Client, login string, password string
 		return nil, errors.New(fmt.Sprintf("status code error: %d %s", res.StatusCode, res.Status))
 	}
 
-	return ioutil.ReadAll(res.Body)
+	return io.ReadAll(res.Body)
 }

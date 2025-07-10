@@ -1,0 +1,14 @@
+{
+  "language-settings": {
+    "go": {
+      "scan-unmanaged": false
+    }
+  },
+  "exclude": {
+    "global": [
+      "**/.git/**",
+      "**/node_modules/**",
+      "**/vendor/**"
+    ]
+  }
+}

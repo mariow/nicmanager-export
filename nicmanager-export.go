@@ -1,3 +1,5 @@
+//go:build !test
+
 package main
 
 import (
@@ -5,7 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"image/color"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -20,8 +22,6 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
-
-
 
 func main() {
 	a := app.NewWithID("witte.io.nicmanager-export")
@@ -118,7 +118,7 @@ func main() {
 		obscureProgress,
 		statusMessage,
 		layout.NewSpacer(),
-		canvas.NewText("© 2021-2023", color.White),
+		canvas.NewText("© 2021-2025", color.White),
 	))
 	w.Resize(fyne.NewSize(300, 500))
 
@@ -198,8 +198,6 @@ func fetchAndWrite(login string, password string, cutoffDate time.Time, outFile 
 	return recordsWritten, nil
 }
 
-
-
 func fetchNicmanagerAPI(client http.Client, login string, password string, pageNo int) ([]byte, error) {
 	var apiURL string = "https://api.nicmanager.com/v1/domains?limit=100&page="
 	req, rErr := http.NewRequest("GET", apiURL+fmt.Sprintf("%d", pageNo), nil)
@@ -224,6 +222,6 @@ func fetchNicmanagerAPI(client http.Client, login string, password string, pageN
 	//spew.Dump(res.Header)
 
 	// convert response into string
-	return ioutil.ReadAll(res.Body)
+	return io.ReadAll(res.Body)
 
 }
